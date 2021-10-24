@@ -9,14 +9,18 @@ export class PathFindingEngine {
         this.grid = grid;
     }
 
-    public static InstantiateAndFind(grid: Grid, start: Coordinates, end: Coordinates): GridElement[] {
+    public static InstantiateAndFind(grid: Grid, start: Coordinates, end: Coordinates): Coordinates[] {
         let engine = new PathFindingEngine(grid);
         return engine.Search(start, end);
     }
 
-    public Search(start: Coordinates, end: Coordinates): GridElement[] {
+    public Search(start: Coordinates, end: Coordinates): Coordinates[] {
         let toVisit: GridElement[] = [];
         if (!this.CoordinatesAreValid(start) || !this.CoordinatesAreValid(end)) {
+            return [];
+        }
+
+        if (this.GetElementAtCoordinates(end).isWall()) {
             return [];
         }
 

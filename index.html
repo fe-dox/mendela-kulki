@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Game</title>
+    <script src="./dist/bundle.js" defer></script>
+    <style>
+        body {
+            font-family: Arial, serif;
+        }
+
+        .selected {
+            border: 5px solid black;
+        }
+
+        td {
+            width: 50px;
+            height: 50px;
+            border: 1px solid darkgrey;
+        }
+
+        td div {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 99%;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            justify-content: space-around;
+            align-items: flex-start;
+        }
+
+        #points {
+            text-align: center;
+            font-size: 4rem;
+        }
+    </style>
+</head>
+<body>
+<h1 id="GameOver"></h1>
+<div class="container">
+    <div class="side">
+        <div id="futureBalls"></div>
+        <div id="points"></div>
+    </div>
+    <div id="gameArea"></div>
+</div>
+</body>
+</html>
