@@ -13,6 +13,10 @@ export enum GameState {
     Finished
 }
 
+/**
+ *
+ * @decorator IsAsync
+ */
 function IsAsync() {
     return function (target: any, name: string, descriptor: PropertyDescriptor) {
         let org = descriptor.value;
@@ -24,6 +28,7 @@ function IsAsync() {
         };
     };
 }
+
 
 export default class Game {
     private readonly _gameArea: GameArea;
