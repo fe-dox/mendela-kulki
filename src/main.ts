@@ -1,5 +1,6 @@
 import Game, {Color, GAME_TABLE_SIZE, GameArea, GameState} from "./Game";
 import {BasicCoordinates, Coordinates} from './Coordinates';
+import Utils from './Utils';
 
 (async function () {
     const mountPoint = document.getElementById("gameArea");
@@ -78,21 +79,23 @@ import {BasicCoordinates, Coordinates} from './Coordinates';
         table.append(tr);
     }
     mountPoint.append(table);
-    game.OnRender(({gameArea, points, nextBalls}: { gameArea: GameArea, points: number, nextBalls: Color[] }) => {
+    game.OnRender(({gameArea, points, nextBalls}: RenderData) => {
         for (let y = 0; y < gameArea.length; y++) {
             for (let x = 0; x < gameArea[y].length; x++) {
                 let color: Color = gameArea[y][x];
-                gameDivs[y][x].style.background = GetCssFromColor(color);
+                gameDivs[y][x].style.background = Utils.GetCssFromColor(color);
             }
         }
         pointsMount.innerText = String(points);
-        futureBalls[0].style.background = GetCssFromColor(nextBalls[0]);
-        futureBalls[1].style.background = GetCssFromColor(nextBalls[1]);
-        futureBalls[2].style.background = GetCssFromColor(nextBalls[2]);
+        futureBalls[0].style.background = Utils.GetCssFromColor(nextBalls[0]);
+        futureBalls[1].style.background = Utils.GetCssFromColor(nextBalls[1]);
+        futureBalls[2].style.background = Utils.GetCssFromColor(nextBalls[2]);
     });
 
-    game.OnFinish(() => {
-        document.getElementById("GameOver").innerText = "Koniec gry, serdeczne gratulacje";
+    game.OnFinish((points: number, time: number) => {
+        let minutes = Math.round(time / 1000 / 60);
+        let seconds = Math.round(time / 1000) % 60;
+        document.getElementById("GameOver").innerText = `Koniec gry! Punkty: ${points}. Czas: ${minutes}m  ${seconds}s `;
     });
 
     game.Init();
@@ -100,30 +103,9 @@ import {BasicCoordinates, Coordinates} from './Coordinates';
 
 })();
 
-function GetCssFromColor(color: Color) {
-    switch (color) {
-        case Color.Empty:
-            return "white";
-        case Color.Green:
-            return "lightgreen";
-        case Color.Red:
-            return "coral";
-        case Color.Blue:
-            return "skyblue";
-        case Color.Yellow:
-            return "wheat";
-        case Color.Cyan:
-            return "mediumaquamarine";
-        case Color.Magenta:
-            return "mediumorchid";
-        case Color.Lime:
-            return "greenyellow";
-        case Color.Move:
-            return "lightgray";
-        case Color.Trace:
-            return "silver";
-        default:
-            return "white";
-    }
-
+interface RenderData {
+    gameArea: GameArea,
+    points: number,
+    nextBalls: Color[]
 }
+

@@ -4,7 +4,8 @@
   "description": "",
   "private": true,
   "scripts": {
-    "build": "webpack"
+    "build": "webpack",
+    "docs": "npx typedoc  --out docs"
   },
   "devDependencies": {
     "ts-loader": "^9.2.6",

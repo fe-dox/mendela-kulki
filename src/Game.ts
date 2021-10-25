@@ -29,6 +29,8 @@ function IsAsync() {
     };
 }
 
+type Direction = 1 | -1
+
 
 export default class Game {
     private readonly _gameArea: GameArea;
@@ -37,6 +39,7 @@ export default class Game {
     private nextBallsGenerator: PlannedRandomGenerator<Color>;
     private _gameState: GameState;
     private points: number = 0;
+    private _start: number;
 
 
     get gameState(): GameState {
@@ -51,6 +54,7 @@ export default class Game {
     public Init() {
         this.AddBalls();
         this._gameState = GameState.Ready;
+        this._start = Date.now();
         this.Render();
     }
 
@@ -81,9 +85,10 @@ export default class Game {
         this.Render();
         await Utils.Delay(500);
         this.Clear();
-        this.Delete();
-        this.AddBalls();
-        this.Delete();
+        if (!this.Delete()) {
+            this.AddBalls();
+            this.Delete();
+        }
         this.Render();
         return true;
     }
@@ -96,7 +101,34 @@ export default class Game {
         }
     }
 
-    private Delete() {
+    private DeleteDiagonally(start: Coordinates, direction: Direction): Coordinates[] {
+        let vectorX = 0;
+        let vectorY = 0;
+        let prevColor = Color.Rainbow;
+        let toDelete: Coordinates[] = [];
+        let positions: Coordinates[] = [];
+        while (this._gameArea[start.y + vectorY]?.[start.x + vectorX] !== undefined) {
+            let x = start.x + vectorX;
+            let y = start.y + vectorY;
+            if (prevColor != this._gameArea[y][x]) {
+                if (positions.length > 4 && prevColor != Color.Empty) {
+                    toDelete.push(...positions);
+                }
+                prevColor = this._gameArea[y][x];
+                positions = [new BasicCoordinates(x, y)];
+            } else {
+                positions.push(new BasicCoordinates(x, y));
+            }
+            vectorX += direction;
+            vectorY += 1;
+        }
+        if (positions.length > 4 && prevColor != Color.Empty) {
+            toDelete.push(...positions);
+        }
+        return toDelete;
+    }
+
+    private Delete(): boolean {
         let toDelete: Coordinates[] = [];
         //noinspection Duplicates
         for (let y = 0; y < this._gameArea.length; y++) {
@@ -136,12 +168,24 @@ export default class Game {
                 toDelete.push(...positions);
             }
         }
+
+        for (let x = 0; x < GAME_TABLE_SIZE; x++) {
+            toDelete.push(...this.DeleteDiagonally(new BasicCoordinates(x, 0), 1));
+            toDelete.push(...this.DeleteDiagonally(new BasicCoordinates(x, 0), -1));
+        }
+
+        for (let y = 1; y < this._gameArea.length; y++) {
+            toDelete.push(...this.DeleteDiagonally(new BasicCoordinates(0, y), 1));
+            toDelete.push(...this.DeleteDiagonally(new BasicCoordinates(GAME_TABLE_SIZE - 1, y), -1));
+        }
+
         for (let coordinate of toDelete) {
             if (this._gameArea[coordinate.y][coordinate.x] != Color.Empty) {
                 this._gameArea[coordinate.y][coordinate.x] = Color.Empty;
                 this.points += 1;
             }
         }
+        return toDelete.length > 0;
     }
 
     private PrepareGrid(from: GameArea = this._gameArea): ColorGrid {
@@ -167,7 +211,7 @@ export default class Game {
             }
         }
 
-        if (emptyCells.length < ballsToAdd.length) {
+        if (emptyCells.length <= ballsToAdd.length) {
             this.Finish();
             return;
         }
@@ -189,7 +233,7 @@ export default class Game {
     public Finish() {
         this._gameState = GameState.Finished;
         if (!!this._onFinish) {
-            this._onFinish(this.points);
+            this._onFinish(this.points, Date.now() - this._start);
         }
     }
 
